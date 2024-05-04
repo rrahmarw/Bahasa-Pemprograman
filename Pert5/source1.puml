@@ -1,0 +1,9 @@
+@startpuml source1
+
+start:
+:Display MENU;
+repeat
+    :Input pilihan;
+    if (pilihan ==1 )
+
+@endpuml
