@@ -140,7 +140,7 @@ int main() {
     }
 
     cout << endl;
-    cout << "                 INVOICE PEMBELIAN BAKSO SUKSES" << endl;
+    cout << "                 INVOICE PEMBELIAN  SUKSES" << endl;
     cout << "----------------------------------------------------------------------" << endl;
     cout << "No     Nama Menu             Harga       Jumlah        Sub Total " << endl;
     cout << "----------------------------------------------------------------------" << endl;
