@@ -1,0 +1,20 @@
+@startuml
+start
+
+class Kalkulator {
+    - angka1: float
+    - angka2: float
+    + Kalkulator()
+    + masukkanAngkaPertama()
+    + masukkanAngkaKedua()
+    + kali(float a, float b): float
+    + bagi(float a, float b): float
+    + tambah(float a, float b): float
+    + kurang(float a, float b): float
+    + main(): int
+}
+
+Kalkulator ..> "iostream"
+Kalkulator ..> "string"
+
+@enduml
