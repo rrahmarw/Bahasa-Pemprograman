@@ -1,38 +1,68 @@
-import pandas as pd
+import sqlite3
+import tkinter as tk
+from tkinter import messagebox, simpledialog
 
-# Fungsi untuk input data pemeliharaan perangkat IT secara manual
-def input_data_pemeliharaan():
-    data = {
-        "No": [],
-        "Nama Perangkat": [],
-        "Jenis Perangkat": [],
-        "Tanggal Pembelian": [],
-        "Tanggal Pemeliharaan": [],
-        "Jenis Pemeliharaan": [],
-        "Deskripsi Masalah": [],
-        "Tindakan Perbaikan": [],
-        "Teknisi": []
+def execute_db_query(query, data=None):
+    conn = sqlite3.connect('maintenance_management.db')
+    cursor = conn.cursor()
+    try:
+        cursor.execute(query, data or ())
+        conn.commit()
+        return cursor
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"SQLite Error: {e}")
+    finally:
+        conn.close()
+
+def add_data():
+    table = simpledialog.askstring("Input", "Enter table name (Assets or MaintenanceActivities):")
+    if table not in ['Assets', 'MaintenanceActivities']:
+        messagebox.showwarning("Warning", "Invalid table name.")
+        return
+
+    fields = {
+        'Assets': ('name', 'location', 'condition', 'last_maintenance_date'),
+        'MaintenanceActivities': ('asset_id', 'activity', 'date', 'technician')
     }
+    data = tuple(simpledialog.askstring("Input", f"Enter {field}:") for field in fields[table])
     
-    n = int(input("Masukkan jumlah data pemeliharaan yang ingin dimasukkan: "))
-    
-    for i in range(n):
-        print(f"\nMasukkan data untuk perangkat ke-{i+1}:")
-        data["No"].append(i+1)
-        data["Nama Perangkat"].append(input("Nama Perangkat: "))
-        data["Jenis Perangkat"].append(input("Jenis Perangkat: "))
-        data["Tanggal Pembelian"].append(input("Tanggal Pembelian (dd-mmm-yyyy): "))
-        data["Tanggal Pemeliharaan"].append(input("Tanggal Pemeliharaan (dd-mmm-yyyy): "))
-        data["Jenis Pemeliharaan"].append(input("Jenis Pemeliharaan: "))
-        data["Deskripsi Masalah"].append(input("Deskripsi Masalah: "))
-        data["Tindakan Perbaikan"].append(input("Tindakan Perbaikan: "))
-        data["Teknisi"].append(input("Teknisi: "))
-    
-    return pd.DataFrame(data)
+    query = f"INSERT INTO {table} ({', '.join(fields[table])}) VALUES ({', '.join('?' * len(fields[table]))})"
+    execute_db_query(query, data)
+    messagebox.showinfo("Success", "Data added successfully.")
 
-# Memasukkan data pemeliharaan secara manual
-df_pemeliharaan = input_data_pemeliharaan()
+def update_data():
+    table = simpledialog.askstring("Input", "Enter table name (Assets or MaintenanceActivities):")
+    column = simpledialog.askstring("Input", "Enter column name to update:")
+    value = simpledialog.askstring("Input", "Enter new value:")
+    condition_column = simpledialog.askstring("Input", "Enter column name for condition:")
+    condition_value = simpledialog.askstring("Input", "Enter condition value:")
+    
+    query = f"UPDATE {table} SET {column} = ? WHERE {condition_column} = ?"
+    execute_db_query(query, (value, condition_value))
+    messagebox.showinfo("Success", "Data updated successfully.")
 
-# Menampilkan DataFrame
-print("\nData Pemeliharaan Perangkat IT:")
-print(df_pemeliharaan)
+def delete_data():
+    table = simpledialog.askstring("Input", "Enter table name (Assets or MaintenanceActivities):")
+    condition_column = simpledialog.askstring("Input", "Enter column name for condition:")
+    condition_value = simpledialog.askstring("Input", "Enter condition value:")
+    
+    query = f"DELETE FROM {table} WHERE {condition_column} = ?"
+    execute_db_query(query, (condition_value,))
+    messagebox.showinfo("Success", "Data deleted successfully.")
+
+# Create the main window
+root = tk.Tk()
+root.title("Maintenance Management System")
+
+# Create and place buttons
+buttons = {
+    "Add Data": add_data,
+    "Update Data": update_data,
+    "Delete Data": delete_data
+}
+
+for text, command in buttons.items():
+    tk.Button(root, text=text, command=command).pack(pady=10)
+
+# Start the Tkinter event loop
+root.mainloop()
